@@ -117,7 +117,7 @@ details{margin:22px 0}summary{cursor:pointer;color:var(--navy);font-weight:600;m
 <button data-v="find"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Find</span></button>
 </div></nav>
 <script>
-var KEY="subaruDesk.v1",CAP=15,FU=3*864e5,TAG="\nSee our work: @SubaruLabs_ and subarusmm.xyz",view="go",editing=false,pending=null,openedAt=0,idOpen=null;
+var KEY="subaruDesk.v1",CAP=15,WIN=12*36e5,FU=3*864e5,TAG="\nSee our work: @SubaruLabs_ and subarusmm.xyz",view="go",editing=false,pending=null,openedAt=0,idOpen=null,replyOpen=null,rdraft="",rurl="",rpost="",rbusy=false;
 var SEED=[
 ["Splitlyfamily","Splitly","Hey, your launch post is sitting at 337 replies with only 241 followers, so it clearly traveled past your own audience. The question is who’s answering all those replies, because that’s where followers get won. I run Subaru SMM, we handle X for Web3 projects, including daily replies. Want a free 10-minute teardown of how to turn that buzz into followers before launch day?"],
 ["Ovusdotfun","Ovus Launchpad","Hey, for a launchpad the anti-rug claim is the whole product, and your pinned explainer is a good start. Before launches go live, the timeline needs to show that claim holding up, with the “is this safe?” questions answered fast. I run Subaru SMM, we manage X for Web3 projects. Want a free 10-minute teardown of how your account could earn that trust before day one?"],
@@ -140,14 +140,19 @@ function follow(p){return"Hey"+(p?" "+p+" team":"")+", quick bump on my note abo
 function first(p,d){return"Hey"+(p?" "+p+" team":"")+", "+(d?d.trim().replace(/[.!\s]+$/,"")+". ":"I’ve been looking at your X account. ")+"I run Subaru SMM, we manage X for Web3 projects (posting, replies, community). Want a free 10-minute teardown of your account? No pitch attached."+TAG}
 function find(id){return S.items.filter(function(i){return i.id===id})[0]}
 function norm(){S.items.forEach(function(i){if(i.status==="sent"&&i.step===1&&Date.now()-i.sentAt>=FU){i.status="queued";i.step=2;i.text=follow(i.project)}})}
-function sentToday(){var d=new Date();d.setHours(0,0,0,0);return S.items.filter(function(i){return i.sentAt>=d.getTime()}).length}
+function lg(){S.log=S.log||[];return S.log}
+function sentToday(){var c=Date.now()-WIN;return lg().filter(function(t){return t>=c}).length}
+function nextSlot(){var c=Date.now()-WIN,w=lg().filter(function(t){return t>=c}).sort();return w.length?new Date(w[0]+WIN).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"soon"}
+function rpanel(c){
+var d=rdraft?'<label for="r-d">Your reply (edit it if you like)</label><textarea id="r-d" style="min-height:90px">'+esc(rdraft)+'</textarea><button class="btn p s" data-a="ropen">Open post and copy reply</button><button class="btn s" data-a="rdone">I posted it</button>':'';
+return'<div class="idrow"><p class="eyebrow" style="margin:0 0 4px">Public reply</p><label for="r-u">Link to one of their posts</label><input id="r-u" inputmode="url" placeholder="https://x.com/handle/status/123" value="'+esc(rurl)+'"><label for="r-t">Paste the text of that post</label><textarea id="r-t" style="min-height:90px;margin-bottom:0">'+esc(rpost)+'</textarea><p class="hint">X doesn’t let this app read the post, so paste its text. Replies should add something useful, with no pitch and no links. Aim for 10 or fewer every 12 hours.</p><button class="btn p s" data-a="rwrite"'+(rbusy?" disabled":"")+'>'+(rbusy?"Writing…":(rdraft?"Write another":"Write reply"))+'</button>'+d+'<p class="hint">Replies saved for this person: '+((c.replies||[]).length)+'</p></div>'}
 function queue(){return S.items.filter(function(i){return i.status==="queued"})}
 function say(t){$("live").textContent=t}
 
 function go(){
 var q=queue(),cur=q[0],n=sentToday(),h="";
 h+='<p class="eyebrow">'+(cur?(cur.step===2?"Follow-up":cur.star?"Special attention":"Next up")+" · "+q.length+" left":"All done")+'</p>';
-h+='<div class="bar" role="progressbar" aria-label="Sent today" aria-valuemin="0" aria-valuemax="'+CAP+'" aria-valuenow="'+n+'"><i style="width:'+Math.min(100,n/CAP*100)+'%"></i></div>';
+h+='<div class="bar" role="progressbar" aria-label="Sent in the last 12 hours" aria-valuemin="0" aria-valuemax="'+CAP+'" aria-valuenow="'+n+'"><i style="width:'+Math.min(100,n/CAP*100)+'%"></i></div>';
 if(!cur){h+='<div class="empty"><h1>You’re <em>done</em> for today</h1><p class="sub">Nobody is waiting to be messaged. Add more people, or come back in 3 days for follow-ups.</p><button class="btn p" data-a="toadd">Add more people</button></div>';return h}
 h+='<h1>@'+esc(cur.handle)+'</h1><p class="sub">'+esc(cur.project||"")+'</p>';
 if(editing){h+='<label class="sr" for="mt">Message</label><textarea id="mt">'+esc(cur.text)+'</textarea><button class="btn p" data-a="saveedit">Save message</button>'}
@@ -155,8 +160,8 @@ else{
 h+='<div class="msg">'+esc(cur.text)+'</div>';
 var full=n>=CAP,need=cur.star&&!cur.pers;
 h+='<button class="btn p" data-a="open"'+((full||need)?" disabled":"")+'>'+(cur.uid?"Open DM with message typed in":"Open profile and copy message")+'</button>';
-h+='<p class="hint" style="margin:-2px 0 16px">'+(full?"You’ve hit today’s limit of "+CAP+". Come back tomorrow.":need?"Special attention: this one needs a personal message. Send me their screenshot in chat, then paste what I write using Edit message.":cur.uid?"X opens the DM box. Press send, then come back here.":"Tap Message on their profile, paste, press send, then come back here.")+'</p>';
-h+='<button class="btn s" data-a="edit">Edit message</button><button class="btn s" data-a="copy">Copy message</button><button class="btn s" data-a="sent">I already sent it</button><button class="btn s" data-a="skip">Skip for now</button><button class="btn s" data-a="star">'+(cur.star?"Not special":"Special attention")+'</button>'+(cur.uid?'':'<button class="btn s" data-a="getid">Get ID</button>')+(idOpen===cur.id&&!cur.uid?'<div class="idrow"><p class="hint" style="margin:0 0 4px">1. The handle is copied. Paste it on the finder and tap Find ID. 2. Copy the number it shows. 3. Come back here and tap Paste &amp; save.</p><label class="sr" for="idin">Numeric ID</label><input id="idin" inputmode="numeric" placeholder="Or type the number here"><button class="btn p s" data-a="idpaste">Paste &amp; save</button><button class="btn s" data-a="idsave">Save typed number</button></div>':'')}
+h+='<p class="hint" style="margin:-2px 0 16px">'+(full?"You’ve sent "+CAP+" in the last 12 hours. The next slot opens at "+nextSlot()+".":need?"Special attention: this one needs a personal message. Send me their screenshot in chat, then paste what I write using Edit message.":cur.uid?"X opens the DM box. Press send, then come back here.":"Tap Message on their profile, paste, press send, then come back here.")+'</p>';
+h+='<button class="btn s" data-a="edit">Edit message</button><button class="btn s" data-a="copy">Copy message</button><button class="btn s" data-a="sent">I already sent it</button><button class="btn s" data-a="skip">Skip for now</button><button class="btn s" data-a="star">'+(cur.star?"Not special":"Special attention")+'</button>'+(cur.uid?'':'<button class="btn s" data-a="getid">Get ID</button>')+(idOpen===cur.id&&!cur.uid?'<div class="idrow"><p class="hint" style="margin:0 0 4px">1. The handle is copied. Paste it on the finder and tap Find ID. 2. Copy the number it shows. 3. Come back here and tap Paste &amp; save.</p><label class="sr" for="idin">Numeric ID</label><input id="idin" inputmode="numeric" placeholder="Or type the number here"><button class="btn p s" data-a="idpaste">Paste &amp; save</button><button class="btn s" data-a="idsave">Save typed number</button></div>':'')+'<button class="btn s" data-a="reply">Reply under a post</button>'+(replyOpen===cur.id?rpanel(cur):'')}
 return h}
 
 function listv(){
@@ -170,7 +175,7 @@ if(st==="queued")h+='<button class="btn s" data-a="star" data-i="'+i.id+'">'+(i.
 
 function render(){
 norm();save();
-$("today").textContent="Sent today "+sentToday()+" of "+CAP;
+$("today").textContent="Sent "+sentToday()+" of "+CAP+" · 12h";
 $("v-go").innerHTML=go();$("list").innerHTML=listv();
 ["go","queue","add","find"].forEach(function(v){$("v-"+v).hidden=(v!==view)});
 document.querySelectorAll("nav button").forEach(function(b){if(b.dataset.v===view)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
@@ -178,7 +183,7 @@ preview()}
 function preview(){$("a-pre").textContent=first($("a-p").value.trim(),$("a-d").value)}
 function show(id){pending=id;var i=find(id);$("sq").textContent="Did you send it to @"+(i?i.handle:"them")+"?";$("sheet").hidden=false;$("yes").focus()}
 function hide(){$("sheet").hidden=true;pending=null}
-function mark(i,s){i.status=s;if(s==="sent")i.sentAt=Date.now()}
+function mark(i,s){i.status=s;if(s==="sent"){i.sentAt=Date.now();lg().push(i.sentAt)}}
 
 document.addEventListener("click",function(e){
 var nb=e.target.closest("nav button");if(nb){view=nb.dataset.v;editing=false;render();window.scrollTo(0,0);return}
@@ -206,6 +211,14 @@ if(!h||S.items.some(function(x){return x.handle===h}))return;S.items.push(mk(h,p
 if(a==="star"&&i){i.star=!i.star;say(i.star?"Marked special attention":"Special attention removed")}
 if(a==="find"){window.open("https://x.com/search?q="+encodeURIComponent(b.dataset.q)+"&f=live","_blank");return}
 if(a==="addlist"){var k=$("a-n").value,added=0;$("a-l").value.split(/[\s,;]+/).forEach(function(tok){var h=clean(tok);if(!/^[a-z0-9_]{1,15}$/.test(h)||S.items.some(function(x){return x.handle===h}))return;var it=mk(h,"",std(k));it.niche=k;S.items.push(it);added++});$("a-l").value="";view="go";say(added+" added")}
+if(a==="reply"&&cur){replyOpen=(replyOpen===cur.id?null:cur.id);rdraft="";rurl="";rpost=""}
+if(a==="rwrite"&&cur){if(!rpost.trim()){say("Paste the post text first.");return}
+rbusy=true;render();
+var prev=[];S.items.forEach(function(x){(x.replies||[]).forEach(function(r){prev.push(r.text)})});
+var pr="You write one public reply under an X post, as Sogi, a Web3 social media manager.\nPost by @"+cur.handle+(cur.project?" ("+cur.project+")":"")+":\n\"\"\""+rpost+"\"\"\"\nRules: 1 to 2 sentences, under 220 characters. Respond to what the post actually says: add a useful point, a sharp question, or a specific compliment. No pitch, no mention of Subaru or services, no links, no hashtags, no emojis, no em dashes, no filler like great post. Sound like a real person.\nDo not reuse the wording or opening of these earlier replies: "+JSON.stringify(prev.slice(-12))+"\nOutput only the reply text.";
+(window.claude?claude.use("sample"):Promise.resolve(null)).then(function(sm){if(!sm)throw 0;return sm(pr)}).then(function(r){rdraft=(r.text||"").trim().replace(/^["“]|["”]$/g,"")}).catch(function(){say("Reply writing isn’t available in this view. Send me the post text in chat and I’ll write it.")}).then(function(){rbusy=false;render()});return}
+if(a==="ropen"&&cur){var rd=($("r-d")||{}).value||rdraft;try{navigator.clipboard.writeText(rd)}catch(x){}window.open(/^https:\/\/(x|twitter)\.com\//i.test(rurl.trim())?rurl.trim():"https://x.com/"+cur.handle,"_blank");return}
+if(a==="rdone"&&cur){cur.replies=cur.replies||[];cur.replies.push({url:rurl,text:($("r-d")||{}).value||rdraft,at:Date.now()});rdraft="";rpost="";rurl="";say("Reply saved")}
 if(a==="getid"&&cur){idOpen=cur.id;try{navigator.clipboard.writeText(cur.handle)}catch(x){}window.open("https://www.getxapi.com/tools/twitter-id-finder","_blank")}
 if(a==="idsave"&&cur){var iv=(($("idin")||{}).value||"").replace(/\D/g,"");if(iv&&iv.length<=20){cur.uid=iv;idOpen=null;say("ID saved")}}
 if(a==="idpaste"&&cur){navigator.clipboard.readText().then(function(t){var v=(t||"").replace(/\D/g,"");if(v.length>=3&&v.length<=20){cur.uid=v;idOpen=null;say("ID saved")}else say("No ID found on the clipboard. Type it in the box instead.");render()}).catch(function(){say("Could not read the clipboard. Type the number in the box instead.")});return}
@@ -213,7 +226,7 @@ if(a==="bkfill"){$("bk").value=JSON.stringify(S);return}
 if(a==="bkload"){try{var v=JSON.parse($("bk").value);if(v&&v.items)S=v}catch(x){}}
 render()});
 
-document.addEventListener("input",function(e){if(e.target.id==="a-p"||e.target.id==="a-d")preview()});
+document.addEventListener("input",function(e){var t=e.target.id;if(t==="a-p"||t==="a-d")preview();if(t==="r-u")rurl=e.target.value;if(t==="r-t")rpost=e.target.value;if(t==="r-d")rdraft=e.target.value});
 document.addEventListener("visibilitychange",function(){if(!document.hidden&&pending&&Date.now()-openedAt>2500)show(pending)});
 $("a-n").innerHTML=Object.keys(NICHES).map(function(k){return'<option value="'+k+'">'+NICHES[k][0]+'</option>'}).join("");
 $("finds").innerHTML=FINDS.map(function(f){return'<div class="row"><b>'+f[0]+'</b><div class="hint" style="margin:2px 0 10px">Searches: '+esc(f[1])+'</div><button class="btn s" data-a="find" data-q="'+esc(f[1])+'">Open on X</button></div>'}).join("");
