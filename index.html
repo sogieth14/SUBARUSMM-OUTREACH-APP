@@ -44,6 +44,8 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .row b{font-size:16px}.row .meta{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
 .pill{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 10px;border-radius:999px;background:var(--tint);white-space:nowrap}
 .pill.w{color:var(--warn)}.pill.g{color:var(--ok)}
+.idrow{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--tint)}
+.idrow input{margin:10px 0 4px}
 .empty{text-align:center;padding:30px 10px}
 details{margin:22px 0}summary{cursor:pointer;color:var(--navy);font-weight:600;min-height:44px;display:flex;align-items:center}
 .sheet{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);border-radius:22px 22px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -12px 40px rgba(0,0,0,.25);z-index:20}
@@ -115,7 +117,7 @@ details{margin:22px 0}summary{cursor:pointer;color:var(--navy);font-weight:600;m
 <button data-v="find"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Find</span></button>
 </div></nav>
 <script>
-var KEY="subaruDesk.v1",CAP=15,FU=3*864e5,TAG="\nSee our work: @SubaruLabs_ and subarusmm.xyz",view="go",editing=false,pending=null,openedAt=0;
+var KEY="subaruDesk.v1",CAP=15,FU=3*864e5,TAG="\nSee our work: @SubaruLabs_ and subarusmm.xyz",view="go",editing=false,pending=null,openedAt=0,idOpen=null;
 var SEED=[
 ["Splitlyfamily","Splitly","Hey, your launch post is sitting at 337 replies with only 241 followers, so it clearly traveled past your own audience. The question is who’s answering all those replies, because that’s where followers get won. I run Subaru SMM, we handle X for Web3 projects, including daily replies. Want a free 10-minute teardown of how to turn that buzz into followers before launch day?"],
 ["Ovusdotfun","Ovus Launchpad","Hey, for a launchpad the anti-rug claim is the whole product, and your pinned explainer is a good start. Before launches go live, the timeline needs to show that claim holding up, with the “is this safe?” questions answered fast. I run Subaru SMM, we manage X for Web3 projects. Want a free 10-minute teardown of how your account could earn that trust before day one?"],
@@ -154,7 +156,7 @@ h+='<div class="msg">'+esc(cur.text)+'</div>';
 var full=n>=CAP,need=cur.star&&!cur.pers;
 h+='<button class="btn p" data-a="open"'+((full||need)?" disabled":"")+'>'+(cur.uid?"Open DM with message typed in":"Open profile and copy message")+'</button>';
 h+='<p class="hint" style="margin:-2px 0 16px">'+(full?"You’ve hit today’s limit of "+CAP+". Come back tomorrow.":need?"Special attention: this one needs a personal message. Send me their screenshot in chat, then paste what I write using Edit message.":cur.uid?"X opens the DM box. Press send, then come back here.":"Tap Message on their profile, paste, press send, then come back here.")+'</p>';
-h+='<button class="btn s" data-a="edit">Edit message</button><button class="btn s" data-a="copy">Copy message</button><button class="btn s" data-a="sent">I already sent it</button><button class="btn s" data-a="skip">Skip for now</button><button class="btn s" data-a="star">'+(cur.star?"Not special":"Special attention")+'</button>'}
+h+='<button class="btn s" data-a="edit">Edit message</button><button class="btn s" data-a="copy">Copy message</button><button class="btn s" data-a="sent">I already sent it</button><button class="btn s" data-a="skip">Skip for now</button><button class="btn s" data-a="star">'+(cur.star?"Not special":"Special attention")+'</button>'+(cur.uid?'':'<button class="btn s" data-a="getid">Get ID</button>')+(idOpen===cur.id&&!cur.uid?'<div class="idrow"><p class="hint" style="margin:0 0 4px">1. The handle is copied. Paste it on the finder and tap Find ID. 2. Copy the number it shows. 3. Come back here and tap Paste &amp; save.</p><label class="sr" for="idin">Numeric ID</label><input id="idin" inputmode="numeric" placeholder="Or type the number here"><button class="btn p s" data-a="idpaste">Paste &amp; save</button><button class="btn s" data-a="idsave">Save typed number</button></div>':'')}
 return h}
 
 function listv(){
@@ -204,6 +206,9 @@ if(!h||S.items.some(function(x){return x.handle===h}))return;S.items.push(mk(h,p
 if(a==="star"&&i){i.star=!i.star;say(i.star?"Marked special attention":"Special attention removed")}
 if(a==="find"){window.open("https://x.com/search?q="+encodeURIComponent(b.dataset.q)+"&f=live","_blank");return}
 if(a==="addlist"){var k=$("a-n").value,added=0;$("a-l").value.split(/[\s,;]+/).forEach(function(tok){var h=clean(tok);if(!/^[a-z0-9_]{1,15}$/.test(h)||S.items.some(function(x){return x.handle===h}))return;var it=mk(h,"",std(k));it.niche=k;S.items.push(it);added++});$("a-l").value="";view="go";say(added+" added")}
+if(a==="getid"&&cur){idOpen=cur.id;try{navigator.clipboard.writeText(cur.handle)}catch(x){}window.open("https://www.getxapi.com/tools/twitter-id-finder","_blank")}
+if(a==="idsave"&&cur){var iv=(($("idin")||{}).value||"").replace(/\D/g,"");if(iv&&iv.length<=20){cur.uid=iv;idOpen=null;say("ID saved")}}
+if(a==="idpaste"&&cur){navigator.clipboard.readText().then(function(t){var v=(t||"").replace(/\D/g,"");if(v.length>=3&&v.length<=20){cur.uid=v;idOpen=null;say("ID saved")}else say("No ID found on the clipboard. Type it in the box instead.");render()}).catch(function(){say("Could not read the clipboard. Type the number in the box instead.")});return}
 if(a==="bkfill"){$("bk").value=JSON.stringify(S);return}
 if(a==="bkload"){try{var v=JSON.parse($("bk").value);if(v&&v.items)S=v}catch(x){}}
 render()});
