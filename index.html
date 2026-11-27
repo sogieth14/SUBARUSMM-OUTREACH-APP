@@ -1,0 +1,218 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>Subaru Outreach App</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap">
+<style>
+:root{--bg:#fff;--card:#fff;--ink:#0b0f1a;--mut:#4b5563;--line:#e5e7eb;--tint:#eaf1ff;--navy:#1d4ed8;--on:#fff;--ok:#047857;--warn:#b45309;
+--serif:"Instrument Serif",Georgia,"Times New Roman",serif;--sans:Inter,system-ui,-apple-system,"Segoe UI",sans-serif;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root[data-theme="dark"]{--bg:#0b1220;--card:#111a2e;--ink:#f1f5f9;--mut:#a8b4c4;--line:#24324d;--tint:#172544;--navy:#6ea0ff;--on:#0b1220;--ok:#6ee7a8;--warn:#fbbf24;color-scheme:dark}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg) linear-gradient(#eef4ff,var(--bg) 300px) no-repeat;color:var(--ink);font:400 16px/1.55 var(--sans);-webkit-font-smoothing:antialiased}
+.wrap{max-width:640px;margin:0 auto;padding:0 18px 120px}
+header{display:flex;align-items:center;justify-content:space-between;padding:22px 0 8px}
+.mark{font-size:15px;letter-spacing:.14em;font-weight:600;text-transform:uppercase}
+.mark em{color:var(--navy);font:italic 400 21px var(--serif);letter-spacing:0;text-transform:none;margin-left:6px}
+.today{font-size:13px;font-weight:600;color:var(--navy);background:var(--tint);padding:6px 12px;border-radius:999px}
+nav{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--card);border-top:1px solid var(--line);padding:6px 10px calc(6px + env(safe-area-inset-bottom,0px));box-shadow:0 -6px 24px rgba(11,15,26,.07)}
+nav .in{display:flex;gap:4px;max-width:640px;margin:0 auto}
+nav button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-height:58px;border:0;border-radius:16px;background:transparent;color:var(--mut);font:600 12px var(--sans);cursor:pointer}
+nav svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+nav button[aria-current="page"]{color:var(--navy);background:var(--tint)}
+.eyebrow{font-size:13px;letter-spacing:.12em;text-transform:uppercase;color:var(--navy);margin:0 0 8px;font-weight:500}
+h1,h2{font:400 clamp(34px,9vw,46px)/1.05 var(--serif);margin:0 0 6px;letter-spacing:-.01em}
+h1 em,h2 em{font-style:italic;color:var(--navy)}
+.sub{color:var(--mut);margin:0 0 18px}
+.bar{height:8px;background:var(--tint);border-radius:9px;overflow:hidden;margin:0 0 22px}
+.bar i{display:block;height:100%;background:var(--navy);border-radius:9px}
+.msg{background:var(--card);border:1px solid var(--line);box-shadow:0 1px 2px rgba(11,15,26,.05),0 10px 28px rgba(29,78,216,.08);border-radius:20px;padding:20px;white-space:pre-wrap;font-size:16px;margin:0 0 16px}
+textarea,input,select{width:100%;font:inherit;color:inherit;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:13px 14px;min-height:48px}
+textarea{min-height:150px;resize:vertical;margin-bottom:16px}
+label{display:block;font-weight:500;margin:16px 0 6px}
+.hint{font-size:14px;color:var(--mut);margin:6px 0 0}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;min-height:54px;padding:0 20px;border-radius:999px;border:1.5px solid var(--navy);background:transparent;color:var(--ink);font:600 16px var(--sans);cursor:pointer;margin:0 0 10px}
+.btn.p{background:var(--navy);color:var(--on)}
+.btn.s{min-height:46px;font-weight:500;width:auto;display:inline-flex;padding:0 16px;margin:0 8px 8px 0}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible,summary:focus-visible{outline:3px solid #3b82f6;outline-offset:2px}
+.row{background:var(--card);border:1px solid var(--line);box-shadow:0 1px 2px rgba(11,15,26,.04),0 6px 18px rgba(29,78,216,.06);border-radius:18px;padding:14px 16px;margin:0 0 10px}
+.row b{font-size:16px}.row .meta{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
+.pill{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 10px;border-radius:999px;background:var(--tint);white-space:nowrap}
+.pill.w{color:var(--warn)}.pill.g{color:var(--ok)}
+.empty{text-align:center;padding:30px 10px}
+details{margin:22px 0}summary{cursor:pointer;color:var(--navy);font-weight:600;min-height:44px;display:flex;align-items:center}
+.sheet{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);border-radius:22px 22px 0 0;padding:22px 18px calc(22px + env(safe-area-inset-bottom,0px));box-shadow:0 -12px 40px rgba(0,0,0,.25);z-index:20}
+.sheet .in{max-width:640px;margin:0 auto}
+.sheet h2{font-size:30px}
+.scrim{position:fixed;inset:0;background:rgba(5,12,20,.5);z-index:10}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:no-preference){.bar i{transition:width .4s ease}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header><div class="mark">Subaru<em>Outreach</em></div><div class="today" id="today"></div></header>
+<div id="live" class="sr" aria-live="polite"></div>
+
+<main>
+<section id="v-go"></section>
+
+<section id="v-queue" hidden>
+<p class="eyebrow">Everyone you’re messaging</p><h2>The <em>list</em></h2><p class="sub">Tap a button when someone replies or says no. They stop getting messages right away.</p>
+<div id="list"></div>
+<details><summary>Backup and restore</summary>
+<p class="hint">Your list is saved in this browser only. Copy the backup text somewhere safe, or paste an old one to restore.</p>
+<label for="bk">Backup text</label><textarea id="bk"></textarea>
+<button class="btn s" data-a="bkfill">Fill with backup</button><button class="btn s" data-a="bkload">Restore from text</button>
+</details>
+</section>
+
+<section id="v-add" hidden>
+<p class="eyebrow">Add people</p><h2>Drop your <em>list</em></h2><p class="sub">Paste handles or X links. The messages write themselves.</p>
+<label for="a-l">Handles</label>
+<textarea id="a-l" placeholder="appadfun&#10;@Ovusdotfun&#10;https://x.com/foezorg"></textarea>
+<label for="a-n">What kind of projects are these?</label>
+<select id="a-n"></select>
+<p class="hint">Pick the one that fits the whole batch.</p>
+<button class="btn p" data-a="addlist" style="margin-top:18px">Add to my list</button>
+<details><summary>Special attention person (personal message)</summary>
+<label for="a-h">Their X handle</label><input id="a-h" placeholder="appadfun" autocapitalize="off" autocomplete="off">
+<label for="a-p">Their project name</label><input id="a-p" placeholder="Appad">
+<label for="a-d">One real thing you noticed on their account</label>
+<textarea id="a-d" style="min-height:90px;margin-bottom:0" placeholder="your pinned post says shipping takes a reason for anyone to care"></textarea>
+<p class="hint">Or leave this empty, add them, and send me their screenshot in chat. I’ll write the message.</p>
+<label for="a-i">Numeric X ID (optional, for a one-tap DM)</label><input id="a-i" inputmode="numeric" placeholder="123456789">
+<p class="eyebrow" style="margin-top:22px">Preview</p><div class="msg" id="a-pre"></div>
+<button class="btn p" data-a="addone">Add as special attention</button></details>
+</section>
+<section id="v-find" hidden>
+<p class="eyebrow">Find projects</p><h2>Find <em>prospects</em></h2><p class="sub">Tap a search. X opens with fresh posts. When you like a project, copy its handle and paste it in Add.</p>
+<div id="finds"></div>
+<p class="hint">Good targets: a real product, 300 to 20,000 followers, posts often, replies left unanswered. Skip dead accounts and anything that looks like a scam.</p>
+</section>
+</main>
+</div>
+
+<div id="sheet" hidden>
+<div class="scrim"></div>
+<div class="sheet" role="dialog" aria-modal="true" aria-labelledby="sq"><div class="in">
+<p class="eyebrow">Welcome back</p><h2 id="sq"></h2>
+<button class="btn p" data-a="yes" id="yes">Yes, I sent it</button>
+<button class="btn" data-a="notyet">Not yet</button>
+<button class="btn" data-a="closed">Their DMs are closed</button>
+</div></div></div>
+
+<nav aria-label="Main"><div class="in">
+<button data-v="go" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 2 11 13"/><path d="M22 2 15 22l-4-9-9-4z"/></svg><span>Today</span></button>
+<button data-v="queue"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9"/><path d="M16 3.1a4 4 0 0 1 0 7.8"/></svg><span>People</span></button>
+<button data-v="add"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg><span>Add</span></button>
+<button data-v="find"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Find</span></button>
+</div></nav>
+<script>
+var KEY="subaruDesk.v1",CAP=15,FU=3*864e5,TAG="\nSee our work: @SubaruLabs_ and subarusmm.xyz",view="go",editing=false,pending=null,openedAt=0;
+var SEED=[
+["Splitlyfamily","Splitly","Hey, your launch post is sitting at 337 replies with only 241 followers, so it clearly traveled past your own audience. The question is who’s answering all those replies, because that’s where followers get won. I run Subaru SMM, we handle X for Web3 projects, including daily replies. Want a free 10-minute teardown of how to turn that buzz into followers before launch day?"],
+["Ovusdotfun","Ovus Launchpad","Hey, for a launchpad the anti-rug claim is the whole product, and your pinned explainer is a good start. Before launches go live, the timeline needs to show that claim holding up, with the “is this safe?” questions answered fast. I run Subaru SMM, we manage X for Web3 projects. Want a free 10-minute teardown of how your account could earn that trust before day one?"],
+["foezorg","Foez","Hey, “show the receipt, get paid in usdc” is clear, and the all-lowercase voice already feels like a brand. The hard part for a consumer app is showing people what the first unlock looks like. I run Subaru SMM, we manage X for Web3 projects. Want a free 10-minute teardown with a few post formats that walk someone through a first receipt?"],
+["appadfun","Appad","Hey, your pinned post says shipping takes “a reason for anyone to care”, and that’s the part I work on. I run Subaru SMM, we manage X for Web3 projects (posting, replies, community). With the launch only just live, want a free 10-minute teardown of what your first week of posts could look like?"],
+["pairedcoin","Paired Coin","Hey, pairing one coin with the volume of thousands is a big idea that takes a second read, and your pinned post hides the explanation behind “show more”. A short plain-language thread could help it spread. I run Subaru SMM, we manage X for Web3 projects. Want a free 10-minute teardown of how to explain it in a way people repeat?"]];
+var NICHES={launch:["Launching soon","saw you’re getting ready to launch. Launch week is when replies and posting pile up fast."],nft:["NFT project","your NFT project caught my eye. Mint season is when a quiet timeline costs you the most."],app:["App or tool","your product is the kind that needs someone explaining it on X every day."],meme:["Meme coin","your coin’s early days are when the timeline matters most. Fast replies decide who stays."],dao:["DAO or community","a community this early lives or dies on how fast people get answers on X."],game:["Web3 game","a Web3 game needs steady posts and replies before and after launch."]};
+var FINDS=[["Projects launching soon","launching soon solana"],["NFT mints going live","mint live nft"],["Fair launches","fair launch pump.fun"],["Apps announcing a beta","web3 app beta live"],["Communities just starting","dao just launched"]];
+function std(n){return"Hey, "+NICHES[n][1]+" I run Subaru SMM, we manage X for Web3 projects (posting, replies, community). Want a free 10-minute teardown of your account? No pitch attached."+TAG}
+function $(i){return document.getElementById(i)}
+function uid(){return Math.random().toString(36).slice(2,10)}
+function mk(h,p,t,id,star,pers){return{id:uid(),handle:h,project:p,uid:id||"",text:t,status:"queued",step:1,sentAt:0,star:!!star,pers:!!pers}}
+function load(){try{var v=JSON.parse(localStorage.getItem(KEY));if(v&&v.items)return v}catch(e){}
+return{items:SEED.map(function(s){return mk(s[0],s[1],s[2]+TAG,"",true,true)})}}
+var S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+function clean(h){h=(h||"").trim().replace(/\/+$/,"").replace(/^https?:\/\/(www\.)?(x|twitter)\.com\//i,"");return h.replace(/^@/,"").split("?")[0].toLowerCase()}
+function follow(p){return"Hey"+(p?" "+p+" team":"")+", quick bump on my note about your X account. Still happy to send the free 10-minute teardown if it’s useful, and no worries if not."+TAG}
+function first(p,d){return"Hey"+(p?" "+p+" team":"")+", "+(d?d.trim().replace(/[.!\s]+$/,"")+". ":"I’ve been looking at your X account. ")+"I run Subaru SMM, we manage X for Web3 projects (posting, replies, community). Want a free 10-minute teardown of your account? No pitch attached."+TAG}
+function find(id){return S.items.filter(function(i){return i.id===id})[0]}
+function norm(){S.items.forEach(function(i){if(i.status==="sent"&&i.step===1&&Date.now()-i.sentAt>=FU){i.status="queued";i.step=2;i.text=follow(i.project)}})}
+function sentToday(){var d=new Date();d.setHours(0,0,0,0);return S.items.filter(function(i){return i.sentAt>=d.getTime()}).length}
+function queue(){return S.items.filter(function(i){return i.status==="queued"})}
+function say(t){$("live").textContent=t}
+
+function go(){
+var q=queue(),cur=q[0],n=sentToday(),h="";
+h+='<p class="eyebrow">'+(cur?(cur.step===2?"Follow-up":cur.star?"Special attention":"Next up")+" · "+q.length+" left":"All done")+'</p>';
+h+='<div class="bar" role="progressbar" aria-label="Sent today" aria-valuemin="0" aria-valuemax="'+CAP+'" aria-valuenow="'+n+'"><i style="width:'+Math.min(100,n/CAP*100)+'%"></i></div>';
+if(!cur){h+='<div class="empty"><h1>You’re <em>done</em> for today</h1><p class="sub">Nobody is waiting to be messaged. Add more people, or come back in 3 days for follow-ups.</p><button class="btn p" data-a="toadd">Add more people</button></div>';return h}
+h+='<h1>@'+esc(cur.handle)+'</h1><p class="sub">'+esc(cur.project||"")+'</p>';
+if(editing){h+='<label class="sr" for="mt">Message</label><textarea id="mt">'+esc(cur.text)+'</textarea><button class="btn p" data-a="saveedit">Save message</button>'}
+else{
+h+='<div class="msg">'+esc(cur.text)+'</div>';
+var full=n>=CAP,need=cur.star&&!cur.pers;
+h+='<button class="btn p" data-a="open"'+((full||need)?" disabled":"")+'>'+(cur.uid?"Open DM with message typed in":"Open profile and copy message")+'</button>';
+h+='<p class="hint" style="margin:-2px 0 16px">'+(full?"You’ve hit today’s limit of "+CAP+". Come back tomorrow.":need?"Special attention: this one needs a personal message. Send me their screenshot in chat, then paste what I write using Edit message.":cur.uid?"X opens the DM box. Press send, then come back here.":"Tap Message on their profile, paste, press send, then come back here.")+'</p>';
+h+='<button class="btn s" data-a="edit">Edit message</button><button class="btn s" data-a="copy">Copy message</button><button class="btn s" data-a="sent">I already sent it</button><button class="btn s" data-a="skip">Skip for now</button><button class="btn s" data-a="star">'+(cur.star?"Not special":"Special attention")+'</button>'}
+return h}
+
+function listv(){
+if(!S.items.length)return'<p class="sub">No one yet.</p>';
+return S.items.map(function(i){
+var st=i.status,lab=st==="queued"?(i.step===2?"Follow-up to send":"To send"):st==="sent"?(i.step===2?"Follow-up sent":"Waiting"):st==="replied"?"Replied":st==="stopped"?"Said no":"Closed";
+var cls=st==="replied"?"g":st==="sent"?"w":"";
+var h='<div class="row"><div class="meta"><b>@'+esc(i.handle)+'</b><span>'+(i.star?'<span class="pill">Special</span> ':'')+'<span class="pill '+cls+'">'+lab+'</span></span></div><div class="hint" style="margin:0 0 10px">'+esc(i.project||"")+'</div>';
+if(st==="queued"||st==="sent")h+='<button class="btn s" data-a="replied" data-i="'+i.id+'">They replied</button><button class="btn s" data-a="stop" data-i="'+i.id+'">They said no</button>';
+if(st==="queued")h+='<button class="btn s" data-a="star" data-i="'+i.id+'">'+(i.star?"Not special":"Special attention")+'</button>';return h+'<button class="btn s" data-a="remove" data-i="'+i.id+'">Remove</button></div>'}).join("")}
+
+function render(){
+norm();save();
+$("today").textContent="Sent today "+sentToday()+" of "+CAP;
+$("v-go").innerHTML=go();$("list").innerHTML=listv();
+["go","queue","add","find"].forEach(function(v){$("v-"+v).hidden=(v!==view)});
+document.querySelectorAll("nav button").forEach(function(b){if(b.dataset.v===view)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")});
+preview()}
+function preview(){$("a-pre").textContent=first($("a-p").value.trim(),$("a-d").value)}
+function show(id){pending=id;var i=find(id);$("sq").textContent="Did you send it to @"+(i?i.handle:"them")+"?";$("sheet").hidden=false;$("yes").focus()}
+function hide(){$("sheet").hidden=true;pending=null}
+function mark(i,s){i.status=s;if(s==="sent")i.sentAt=Date.now()}
+
+document.addEventListener("click",function(e){
+var nb=e.target.closest("nav button");if(nb){view=nb.dataset.v;editing=false;render();window.scrollTo(0,0);return}
+var b=e.target.closest("button[data-a]");if(!b)return;var a=b.dataset.a,cur=queue()[0],i=b.dataset.i?find(b.dataset.i):cur;
+if(a==="open"&&cur){var t=cur.text,u=cur.uid?"https://x.com/messages/compose?recipient_id="+encodeURIComponent(cur.uid)+"&text="+encodeURIComponent(t):"https://x.com/"+cur.handle;
+try{navigator.clipboard.writeText(t)}catch(x){}
+pending=cur.id;openedAt=Date.now();window.open(u,"_blank");return}
+if(a==="copy"&&cur){try{navigator.clipboard.writeText(cur.text);say("Message copied")}catch(x){}return}
+if(a==="edit"){editing=true}
+if(a==="saveedit"&&cur){cur.text=$("mt").value;editing=false;if(cur.star)cur.pers=true}
+if(a==="skip"&&cur){S.items.splice(S.items.indexOf(cur),1);S.items.push(cur);say("Skipped for now")}
+if(a==="sent"&&cur){mark(cur,"sent");say("Marked as sent")}
+if(a==="yes"&&pending){var p=find(pending);if(p){mark(p,"sent");say("Marked as sent")}hide()}
+if(a==="notyet"){hide()}
+if(a==="closed"&&pending){var c=find(pending);if(c)mark(c,"closed");hide();say("Marked closed")}
+if(a==="replied"&&i)mark(i,"replied");
+if(a==="stop"&&i)mark(i,"stopped");
+if(a==="remove"&&i)S.items.splice(S.items.indexOf(i),1);
+if(a==="toadd"){view="add"}
+if(a==="addone"){var h=clean($("a-h").value);if(!h){$("a-h").focus();return}
+if(!S.items.some(function(x){return x.handle===h})){S.items.unshift(mk(h,$("a-p").value.trim(),first($("a-p").value.trim(),$("a-d").value),$("a-i").value.replace(/\D/g,""),true,!!$("a-d").value.trim()))}
+["a-h","a-p","a-d","a-i"].forEach(function(k){$(k).value=""});view="go";say("Added")}
+if(a==="addmany"){$("a-m").value.split("\n").forEach(function(l){var p=l.split("|").map(function(x){return x.trim()}),h=clean(p[0]);
+if(!h||S.items.some(function(x){return x.handle===h}))return;S.items.push(mk(h,p[1]||"",first(p[1]||"",p[2]||""),(p[3]||"").replace(/\D/g,"")))});$("a-m").value="";view="go"}
+if(a==="star"&&i){i.star=!i.star;say(i.star?"Marked special attention":"Special attention removed")}
+if(a==="find"){window.open("https://x.com/search?q="+encodeURIComponent(b.dataset.q)+"&f=live","_blank");return}
+if(a==="addlist"){var k=$("a-n").value,added=0;$("a-l").value.split(/[\s,;]+/).forEach(function(tok){var h=clean(tok);if(!/^[a-z0-9_]{1,15}$/.test(h)||S.items.some(function(x){return x.handle===h}))return;var it=mk(h,"",std(k));it.niche=k;S.items.push(it);added++});$("a-l").value="";view="go";say(added+" added")}
+if(a==="bkfill"){$("bk").value=JSON.stringify(S);return}
+if(a==="bkload"){try{var v=JSON.parse($("bk").value);if(v&&v.items)S=v}catch(x){}}
+render()});
+
+document.addEventListener("input",function(e){if(e.target.id==="a-p"||e.target.id==="a-d")preview()});
+document.addEventListener("visibilitychange",function(){if(!document.hidden&&pending&&Date.now()-openedAt>2500)show(pending)});
+$("a-n").innerHTML=Object.keys(NICHES).map(function(k){return'<option value="'+k+'">'+NICHES[k][0]+'</option>'}).join("");
+$("finds").innerHTML=FINDS.map(function(f){return'<div class="row"><b>'+f[0]+'</b><div class="hint" style="margin:2px 0 10px">Searches: '+esc(f[1])+'</div><button class="btn s" data-a="find" data-q="'+esc(f[1])+'">Open on X</button></div>'}).join("");
+render();
+</script>
+</body>
+</html>
