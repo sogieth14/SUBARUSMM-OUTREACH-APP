@@ -14,4 +14,4 @@ A single-page app. No install, no server. Everything is in index.html.
 - Your queue is saved in your own browser, not in the repo. Moving from the claude.ai link to GitHub starts empty. Use People, then Backup and restore, to copy your list over.
 - Use the same phone and browser every time.
 - To change the logo or wording later, edit index.html and upload it again.
-- The "Write reply" button (public replies) asks Claude through the claude.ai link. On GitHub Pages it is not available, so use the claude.ai link for that feature, or send the post text to Claude in chat.
+- The "Write reply" button asks Claude directly when you open the app from the claude.ai link. On GitHub Pages it can't, so it copies a ready-made prompt instead: tap Open Claude, paste the prompt, then paste Claude's reply back into the box and continue as normal.

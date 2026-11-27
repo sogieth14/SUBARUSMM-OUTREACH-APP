@@ -44,6 +44,7 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 .row b{font-size:16px}.row .meta{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:8px}
 .pill{font-size:12px;font-weight:600;letter-spacing:.04em;padding:3px 10px;border-radius:999px;background:var(--tint);white-space:nowrap}
 .pill.w{color:var(--warn)}.pill.g{color:var(--ok)}
+#toast{position:fixed;left:14px;right:14px;bottom:calc(88px + env(safe-area-inset-bottom,0px));z-index:30;max-width:612px;margin:0 auto;background:var(--ink);color:var(--bg);padding:14px 16px;border-radius:14px;font-size:15px;box-shadow:0 8px 28px rgba(0,0,0,.28)}
 .idrow{margin-top:14px;padding:14px;border:1px solid var(--line);border-radius:16px;background:var(--tint)}
 .idrow input{margin:10px 0 4px}
 .empty{text-align:center;padding:30px 10px}
@@ -117,7 +118,7 @@ details{margin:22px 0}summary{cursor:pointer;color:var(--navy);font-weight:600;m
 <button data-v="find"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg><span>Find</span></button>
 </div></nav>
 <script>
-var KEY="subaruDesk.v1",CAP=15,WIN=12*36e5,FU=3*864e5,TAG="\nSee our work: @SubaruLabs_ and subarusmm.xyz",view="go",editing=false,pending=null,openedAt=0,idOpen=null,replyOpen=null,rdraft="",rurl="",rpost="",rbusy=false;
+var KEY="subaruDesk.v1",CAP=15,WIN=12*36e5,FU=3*864e5,TAG="\nSee our work: @SubaruLabs_ and subarusmm.xyz",view="go",editing=false,pending=null,openedAt=0,idOpen=null,replyOpen=null,rdraft="",rurl="",rpost="",rbusy=false,rmanual=false;
 var SEED=[
 ["Splitlyfamily","Splitly","Hey, your launch post is sitting at 337 replies with only 241 followers, so it clearly traveled past your own audience. The question is who’s answering all those replies, because that’s where followers get won. I run Subaru SMM, we handle X for Web3 projects, including daily replies. Want a free 10-minute teardown of how to turn that buzz into followers before launch day?"],
 ["Ovusdotfun","Ovus Launchpad","Hey, for a launchpad the anti-rug claim is the whole product, and your pinned explainer is a good start. Before launches go live, the timeline needs to show that claim holding up, with the “is this safe?” questions answered fast. I run Subaru SMM, we manage X for Web3 projects. Want a free 10-minute teardown of how your account could earn that trust before day one?"],
@@ -144,10 +145,10 @@ function lg(){S.log=S.log||[];return S.log}
 function sentToday(){var c=Date.now()-WIN;return lg().filter(function(t){return t>=c}).length}
 function nextSlot(){var c=Date.now()-WIN,w=lg().filter(function(t){return t>=c}).sort();return w.length?new Date(w[0]+WIN).toLocaleTimeString([],{hour:"numeric",minute:"2-digit"}):"soon"}
 function rpanel(c){
-var d=rdraft?'<label for="r-d">Your reply (edit it if you like)</label><textarea id="r-d" style="min-height:90px">'+esc(rdraft)+'</textarea><button class="btn p s" data-a="ropen">Open post and copy reply</button><button class="btn s" data-a="rdone">I posted it</button>':'';
-return'<div class="idrow"><p class="eyebrow" style="margin:0 0 4px">Public reply</p><label for="r-u">Link to one of their posts</label><input id="r-u" inputmode="url" placeholder="https://x.com/handle/status/123" value="'+esc(rurl)+'"><label for="r-t">Paste the text of that post</label><textarea id="r-t" style="min-height:90px;margin-bottom:0">'+esc(rpost)+'</textarea><p class="hint">X doesn’t let this app read the post, so paste its text. Replies should add something useful, with no pitch and no links. Aim for 10 or fewer every 12 hours.</p><button class="btn p s" data-a="rwrite"'+(rbusy?" disabled":"")+'>'+(rbusy?"Writing…":(rdraft?"Write another":"Write reply"))+'</button>'+d+'<p class="hint">Replies saved for this person: '+((c.replies||[]).length)+'</p></div>'}
+var d=(rdraft||rmanual)?'<label for="r-d">'+(rmanual&&!rdraft?"Paste Claude’s reply here":"Your reply (edit it if you like)")+'</label><textarea id="r-d" style="min-height:90px">'+esc(rdraft)+'</textarea><button class="btn p s" data-a="ropen">Open post and copy reply</button><button class="btn s" data-a="rdone">I posted it</button>':'';
+return'<div class="idrow"><p class="eyebrow" style="margin:0 0 4px">Public reply</p><label for="r-u">Link to one of their posts</label><input id="r-u" inputmode="url" placeholder="https://x.com/handle/status/123" value="'+esc(rurl)+'"><label for="r-t">Paste the text of that post</label><textarea id="r-t" style="min-height:90px;margin-bottom:0">'+esc(rpost)+'</textarea><p class="hint">X doesn’t let this app read the post, so paste its text. Replies should add something useful, with no pitch and no links. Aim for 10 or fewer every 12 hours.</p><button class="btn p s" data-a="rwrite"'+(rbusy?" disabled":"")+'>'+(rbusy?"Writing…":(rdraft?"Write another":"Write reply"))+'</button>'+(rmanual?'<button class="btn s" data-a="openclaude">Open Claude</button>':'')+d+'<p class="hint">Replies saved for this person: '+((c.replies||[]).length)+'</p></div>'}
 function queue(){return S.items.filter(function(i){return i.status==="queued"})}
-function say(t){$("live").textContent=t}
+var tt=null;function say(t){$("live").textContent=t;var e=$("toast");if(!e){e=document.createElement("div");e.id="toast";e.setAttribute("role","status");document.body.appendChild(e)}e.textContent=t;e.hidden=false;clearTimeout(tt);tt=setTimeout(function(){e.hidden=true},8000)}
 
 function go(){
 var q=queue(),cur=q[0],n=sentToday(),h="";
@@ -211,14 +212,16 @@ if(!h||S.items.some(function(x){return x.handle===h}))return;S.items.push(mk(h,p
 if(a==="star"&&i){i.star=!i.star;say(i.star?"Marked special attention":"Special attention removed")}
 if(a==="find"){window.open("https://x.com/search?q="+encodeURIComponent(b.dataset.q)+"&f=live","_blank");return}
 if(a==="addlist"){var k=$("a-n").value,added=0;$("a-l").value.split(/[\s,;]+/).forEach(function(tok){var h=clean(tok);if(!/^[a-z0-9_]{1,15}$/.test(h)||S.items.some(function(x){return x.handle===h}))return;var it=mk(h,"",std(k));it.niche=k;S.items.push(it);added++});$("a-l").value="";view="go";say(added+" added")}
-if(a==="reply"&&cur){replyOpen=(replyOpen===cur.id?null:cur.id);rdraft="";rurl="";rpost=""}
+if(a==="reply"&&cur){replyOpen=(replyOpen===cur.id?null:cur.id);rdraft="";rurl="";rpost="";rmanual=false}
 if(a==="rwrite"&&cur){if(!rpost.trim()){say("Paste the post text first.");return}
 rbusy=true;render();
 var prev=[];S.items.forEach(function(x){(x.replies||[]).forEach(function(r){prev.push(r.text)})});
 var pr="You write one public reply under an X post, as Sogi, a Web3 social media manager.\nPost by @"+cur.handle+(cur.project?" ("+cur.project+")":"")+":\n\"\"\""+rpost+"\"\"\"\nRules: 1 to 2 sentences, under 220 characters. Respond to what the post actually says: add a useful point, a sharp question, or a specific compliment. No pitch, no mention of Subaru or services, no links, no hashtags, no emojis, no em dashes, no filler like great post. Sound like a real person.\nDo not reuse the wording or opening of these earlier replies: "+JSON.stringify(prev.slice(-12))+"\nOutput only the reply text.";
-(window.claude?claude.use("sample"):Promise.resolve(null)).then(function(sm){if(!sm)throw 0;return sm(pr)}).then(function(r){rdraft=(r.text||"").trim().replace(/^["“]|["”]$/g,"")}).catch(function(){say("Reply writing isn’t available in this view. Send me the post text in chat and I’ll write it.")}).then(function(){rbusy=false;render()});return}
+say("Writing your reply. The first one can take up to a minute.");
+(window.claude?claude.use("sample"):Promise.resolve(null)).then(function(sm){if(!sm){throw{code:"none"}}return sm(pr,{modelTier:"quick"})}).then(function(r){rdraft=(r.text||"").trim().replace(/^["“]|["”]$/g,"");say(rdraft?"Reply ready. Check it below.":"Claude sent back an empty answer. Tap Write reply again.")}).catch(function(er){var c=er&&er.code;if(c==="none"){rmanual=true;try{navigator.clipboard.writeText(pr)}catch(x){}say("Reply writing isn’t built into this copy. I copied a prompt. Open Claude, paste it, then paste Claude’s reply into the box below.");return}say(c==="not_granted"?"Permission was declined. Tap Write reply again and choose Allow.":c==="rate_limited"?"Too many requests. Wait a minute and try again.":c==="none"?"Reply writing only works when you open this app from your claude.ai link while signed in. Send me the post text in chat and I’ll write it.":"Couldn’t write the reply ("+(c||"error")+"). Tap Write reply again, or send me the post text in chat.")}).then(function(){rbusy=false;render()});return}
 if(a==="ropen"&&cur){var rd=($("r-d")||{}).value||rdraft;try{navigator.clipboard.writeText(rd)}catch(x){}window.open(/^https:\/\/(x|twitter)\.com\//i.test(rurl.trim())?rurl.trim():"https://x.com/"+cur.handle,"_blank");return}
-if(a==="rdone"&&cur){cur.replies=cur.replies||[];cur.replies.push({url:rurl,text:($("r-d")||{}).value||rdraft,at:Date.now()});rdraft="";rpost="";rurl="";say("Reply saved")}
+if(a==="rdone"&&cur){cur.replies=cur.replies||[];cur.replies.push({url:rurl,text:($("r-d")||{}).value||rdraft,at:Date.now()});rdraft="";rpost="";rurl="";rmanual=false;say("Reply saved")}
+if(a==="openclaude"){window.open("https://claude.ai/new","_blank");return}
 if(a==="profile"&&i){window.open("https://x.com/"+i.handle,"_blank");return}
 if(a==="getid"&&cur){idOpen=cur.id;try{navigator.clipboard.writeText(cur.handle)}catch(x){}window.open("https://www.getxapi.com/tools/twitter-id-finder","_blank")}
 if(a==="idsave"&&cur){var iv=(($("idin")||{}).value||"").replace(/\D/g,"");if(iv&&iv.length<=20){cur.uid=iv;idOpen=null;say("ID saved")}}
